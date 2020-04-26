@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="28262977-f16a-48fb-9140-30cb82ddc4f4" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup-ssid-password.sh" beforeDir="false" afterPath="$PROJECT_DIR$/setup-ssid-password.sh" afterDir="false" />
-    </list>
+    <list default="true" id="28262977-f16a-48fb-9140-30cb82ddc4f4" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -242,7 +239,28 @@
       <option name="project" value="LOCAL" />
       <updated>1587885561839</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="i can set the password! amazing">
+      <created>1587897775949</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1587897775949</updated>
+    </task>
+    <task id="LOCAL-00003" summary="i can set the password! amazing">
+      <created>1587897891763</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1587897891763</updated>
+    </task>
+    <task id="LOCAL-00004" summary="i can set the password! amazing">
+      <created>1587897928455</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1587897928455</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -260,6 +278,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="push something by PyCharm" />
-    <option name="LAST_COMMIT_MESSAGE" value="push something by PyCharm" />
+    <MESSAGE value="i can set the password! amazing" />
+    <option name="LAST_COMMIT_MESSAGE" value="i can set the password! amazing" />
   </component>
 </project>
