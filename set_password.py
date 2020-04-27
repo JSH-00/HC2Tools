@@ -2,18 +2,54 @@
 # -*- coding: UTF-8 -*-
 import sys, getopt
 import os
-os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep ^ssid=\"")
-os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep wpa_passphrase=\"")
+
+# print ("飞机信息：")
+# os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep ^ssid= | sed 's/ssid=/SSID：/g'\"")
+# os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep wpa_passphrase= | sed 's/wpa_passphrase=/Password：/g'\"")
+def setPassSSID(arg):
+    print ("this is setPassSSID")
+    os.system("adb shell \"sed -i 's/^ssid=.*/ssid=%s/g' data/misc/wifi/hostapd.conf\""%(arg[2]))
+    os.system("adb shell \"sed -i 's/wpa_passphrase=.*/wpa_passphrase=%s/g' data/misc/wifi/hostapd.conf\""%(arg[4]))
+
+def setSuccess():
+    print ("更改成功!")
+    os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep ^ssid= | sed 's/ssid=/SSID：/g'\"")
+    os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep wpa_passphrase= | sed 's/wpa_passphrase=/Password：/g'\"")
+    # os.system("adb reboot -f")
+
+def setPass(arg):
+    os.system("adb shell \"sed -i 's/wpa_passphrase=.*/wpa_passphrase=%s/g' data/misc/wifi/hostapd.conf\"" % (arg[2]))
+
+def setSSID(arg):
+    os.system("adb shell \"sed -i 's/^ssid=.*/ssid=%s/g' data/misc/wifi/hostapd.conf\"" % (arg[2]))
+
+def getHelp():
+        print("设置SSID和密码：python XXX.py -sSSID new_ssid -sPASS new_password")
+        print("设置SSID：python XXX.py -sSSID new_ssid")
+        print("设置密码：python XXX.py -sPASS new_password")
+        print("获取飞机信息：python XXX.py -g")
+        print("帮助文档：python XXX.py -h")
+
+
+
 if  sys.argv[1]=="-sSSID" and sys.argv[3]=="-sPASS":
-
-    os.system("adb shell \"sed -i 's/^ssid=.*/ssid=%s/g' data/misc/wifi/hostapd.conf\""%(sys.argv[2]))
-    os.system("adb shell \"sed -i 's/wpa_passphrase=.*/wpa_passphrase=%s/g' data/misc/wifi/hostapd.conf\""%(sys.argv[4]))
-    os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep ^ssid=\"")
-    os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep wpa_passphrase=\"")
-    os.system("adb reboot -f")
+    setPassSSID(sys.argv)
+    setSuccess()
+elif sys.argv[1]=="-sPASS":
+    setPass(sys.argv)
+    setSuccess()
+elif sys.argv[1] == "-sSSID":
+    setPass(sys.argv)
+    setSuccess()
     # print (len(sys.argv))
-
-# os.system("python haha.py %s %s" % (paramA,paramB))
+elif sys.argv[1] == "-g":
+    print ("飞机信息：")
+    os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep ^ssid= | sed 's/ssid=/SSID：/g'\"")
+    os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep wpa_passphrase= | sed 's/wpa_passphrase=/Password：/g'\"")
+elif sys.argv[1] == "-h":
+    getHelp()
+else:
+    print ("运行失败,-h 查看帮助文档")
 
 # os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep ^ssid=\"")
 # os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep wpa_passphrase=\"")
