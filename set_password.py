@@ -12,7 +12,7 @@ def setSuccess():
     print ("更改成功!")
     os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep ^ssid= | sed 's/ssid=/SSID：/g'\"")
     os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep wpa_passphrase= | sed 's/wpa_passphrase=/Password：/g'\"")
-    # os.system("adb reboot -f")
+    os.system("adb reboot -f")
 
 def setPass(arg):
     os.system("adb shell \"sed -i 's/wpa_passphrase=.*/wpa_passphrase=%s/g' data/misc/wifi/hostapd.conf\"" % (arg[2]))
