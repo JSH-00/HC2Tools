@@ -32,16 +32,16 @@ def getHelp():
     print("帮助文档：python XXX.py -h")
 
 if  sys.argv[1] == "-sSSID" and sys.argv[3] == "-sPASS":
-    setPassSSID(sys.argv[2], sys.argv[4])
-    setSuccess()
-elif sys.argv[1] == "-sPASS" and sys.argv[3] == "-sSSID":
     setSSIDPass(sys.argv[2], sys.argv[4])
     setSuccess()
+elif sys.argv[1] == "-sPASS" and sys.argv[3] == "-sSSID":
+    setPassSSID(sys.argv[2], sys.argv[4])
+    setSuccess()
 elif sys.argv[1] == "-sPASS":
-    setPass(sys.argv)
+    setPass(sys.argv[2])
     setSuccess()
 elif sys.argv[1] == "-sSSID":
-    setPass(sys.argv)
+    setPass(ssys.argv[2])
     setSuccess()
 elif sys.argv[1] == "-g":
     print ("飞机信息：")
