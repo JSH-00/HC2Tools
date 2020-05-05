@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="28262977-f16a-48fb-9140-30cb82ddc4f4" name="Default Changelist" comment="add done information">
+    <list default="true" id="28262977-f16a-48fb-9140-30cb82ddc4f4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/getopt.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/set_password.py" beforeDir="false" afterPath="$PROJECT_DIR$/set_password.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -23,15 +24,16 @@
   </component>
   <component name="ProjectId" id="1asRUTA0UiqiZ9jlsy6k6jXyiMT" />
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/getopt.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/getopt_test.py" />
     <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\python-drones" />
+      <recent name="D:\pytest1" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\python-drones" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="D:\pytest1" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -46,7 +48,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.set_password">
+  <component name="RunManager" selected="Python.getopt_test">
     <configuration name="SSID" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="pytest1" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -110,7 +112,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="getopt" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration name="getopt_test" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="pytest1" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -122,7 +124,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/getopt.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/getopt_test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -218,7 +220,7 @@
     </configuration>
     <list>
       <item itemvalue="Python.set_password" />
-      <item itemvalue="Python.getopt" />
+      <item itemvalue="Python.getopt_test" />
       <item itemvalue="Python.char" />
       <item itemvalue="Python.SSID" />
       <item itemvalue="Python.hello_file" />
@@ -284,7 +286,14 @@
       <option name="project" value="LOCAL" />
       <updated>1587954295891</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="add done information">
+      <created>1588058752847</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1588058752847</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
