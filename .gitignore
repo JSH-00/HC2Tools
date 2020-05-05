@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -106,3 +107,6 @@ venv.bak/
 # myProject add
 *getopt_test.py
 *.idea/workspace.xml/
+=======
+__pycache__/
+>>>>>>> f8b975aedb2726f2e274281ae885275c8a3fd6e6
