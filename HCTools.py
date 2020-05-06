@@ -1,5 +1,9 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+# @Time    : 2020/5/6
+# @Author  : ShuHan Ji
+# @File    : HCTools.py
+# @Software: PyCharm
 import sys, getopt
 import os
 
