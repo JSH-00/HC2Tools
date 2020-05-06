@@ -41,7 +41,7 @@ def getInfo():
 def getHelp():
     print("设置SSID：-s new_ssid 或 --sSSID new_ssid 或 --sSSID=new_ssid\n"
           "设置密码：-p new_pass 或 --sPASS new_password 或 --sPASS=new_password\n"
-          "切换Wi-Fi频段：-w 5(5g/5G) 或 -w 2(2g/2G/2.4/2.4g/2.4G)  或 -sWIFI new_band\n",
+          "切换Wi-Fi频段：-w 5(5g/5G) 或 -w 2(2g/2G/2.4/2.4g/2.4G)  或 --sWIFI new_band\n",
           "获取飞机信息：-g 或 --gINFO\n"
           "帮助文档：-h 或 --help")
 set_ok = 0 # 定义返回设置/获取状态参数，判断是否设置/获取成功、是否需要重启
