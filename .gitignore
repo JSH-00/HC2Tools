@@ -105,4 +105,4 @@ venv.bak/
 
 # myProject add
 *getopt_test.py
-/.idea/workspace.xml/
+.idea/workspace.xml/
