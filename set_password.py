@@ -80,6 +80,7 @@ for opt_name,opt_values in opts:
 # 判断是否设置/获取成功并要重启
 if set_ok > 3:
     printSSIDPass()
+    getWiFi()
     setSuccessReboot()
 elif set_ok > 0:
     print ("获取成功")
