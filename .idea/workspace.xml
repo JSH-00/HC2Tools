@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="28262977-f16a-48fb-9140-30cb82ddc4f4" name="Default Changelist" comment="">
+    <list default="true" id="38dca422-2592-4e8d-98e0-385cfc2439a2" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/getopt.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/set_password.py" beforeDir="false" afterPath="$PROJECT_DIR$/set_password.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HCTools.py" beforeDir="false" afterPath="$PROJECT_DIR$/HCTools.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -24,7 +23,7 @@
   </component>
   <component name="ProjectId" id="1asRUTA0UiqiZ9jlsy6k6jXyiMT" />
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/getopt_test.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RecentsManager">
