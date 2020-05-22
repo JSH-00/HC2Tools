@@ -1,8 +1,8 @@
-#HCTool  使用说明
+# HCTool  使用说明
 * 可用于获取飞机信息、设置飞机相关配置
 * 运行环境 python 3
 
-##Useage
+## Useage
 #### 获取帮助
 
 ```
