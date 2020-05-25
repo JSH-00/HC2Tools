@@ -26,5 +26,11 @@ python3 HCTool.py -w 2   //改为2.4G
 ```
 python3 HCTool.py -s NewSSID
 ```
+#### 升级天空端
+```
+python3 HCTool.py -k dev // 升级为dev最新分支
+python3 HCTool.py -k totest // 升级为totest最新分支
+
+```
 ### Feedback
 E-mail：jishuhan@zerozero.cn
