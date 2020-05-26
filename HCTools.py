@@ -25,6 +25,10 @@ def setSuccessReboot():
     print ("更改成功,正在重启……")
     os.system("adb reboot -f")
 
+def updateSuccessReboot():
+    print ("安装成功,正在重启……")
+    os.system("adb reboot -f")
+
 def setFailed():
     softMessage()
     print ("运行失败，查看帮助文档:\npython3 HCTools.py -h\n\n")
@@ -68,7 +72,8 @@ def updateSkyToDrone(file_path, file_name):
     os.system("adb shell systemctl stop zz_fpv")
     time.sleep(0.1)
     os.system("adb shell \"/hover/tests/fpv/fpv_upgrade /hover/tests/fpv/%s\"" % file_name)
-    print('\n安装包:', file_name, '\n安装完成！')
+    print('\n安装包:', file_name)
+    updateSuccessReboot()
 
 def deleteZipDir(zip_path, dir_path):
     """删除本地下载的安装包zip和解压的文件夹"""
