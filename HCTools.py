@@ -27,10 +27,10 @@ def setSuccessReboot():
 
 def setFailed():
     softMessage()
-    print ("\n运行失败，查看帮助文档:\npython HCTools.py -h")
+    print ("运行失败，查看帮助文档:\npython3 HCTools.py -h\n\n")
 
-# 下载天空端最新zip
 def downloadLatestSky(branch_name):
+    """下载天空端最新zip"""
     SkyUrlHead="http://ci.zerozero.cn:88/view/6.HC2_BRemoter/job/HC2_BRemoter-"
     SkyUrlTail="/lastSuccessfulBuild/artifact/*zip*/downLoadSky.zip"
     urlAll = '%s%s%s' % (SkyUrlHead, newBranch, SkyUrlTail)
@@ -41,7 +41,6 @@ def updateSky(branch_name):
     if defineImageMode():
         downloadLatestSky(branch_name)
         sky_file_name =unzip_file('./downLoadSky.zip','./downLoadSky')
-        print('图传模式')
         sky_file_path = "".join(glob.glob(r'./downLoadSky/archive/ota_sky*')) #  模糊匹配,获取文件路径并转化为字符串
         sky_file_name = sky_file_path.split('/')[-1] # 从地址中提取文件名
         print(sky_file_name)
@@ -50,13 +49,11 @@ def updateSky(branch_name):
     else:
         print('升级失败，请将飞机切换到图传模式!')
 
-
 def unzip_file(zip_src, dst_dir):
     """解压zip文件夹（文件名，文件地址）"""
     file = zipfile.ZipFile(zip_src, 'r')
     file.extractall(dst_dir)
     
-
 def defineImageMode():
     """确认是否为图传模式"""
     image_band = os.popen("adb shell lsusb").read()
@@ -72,7 +69,6 @@ def updateSkyToDrone(file_path, file_name):
     time.sleep(0.1)
     os.system("adb shell \"/hover/tests/fpv/fpv_upgrade /hover/tests/fpv/%s\"" % file_name)
     print('\n安装包:', file_name, '\n安装完成！')
-
 
 def deleteZipDir(zip_path, dir_path):
     """删除本地下载的安装包zip和解压的文件夹"""
@@ -101,8 +97,7 @@ def getHelp():
           "切换Wi-Fi频段：-w 5(5g/5G) 或 -w 2(2g/2G/2.4/2.4g/2.4G) 或 --sWIFI new_band\n"
           "   升级天空端：-k totest(dev) 或 --uSKY totset(dev)\n"
           " 获取飞机信息：-g 或 --gINFO\n"
-          "     帮助文档：-h 或 --help")
-
+          "     帮助文档：-h 或 --help\n")
 
 def softMessage():
     print ("------------------------------------------------------------------")
@@ -120,9 +115,7 @@ opts,args = getopt.gnu_getopt(sys.argv[1:],'-s:-p:-w:-k:-g-h',['sSSID=','sPASS='
 if args:
     setFailed()
     exit()
-
 for opt_name,opt_values in opts:
-
     if opt_name in ('-s','--sSSID'):
         newSSID = opt_values
         setSSID(newSSID)
@@ -147,7 +140,7 @@ for opt_name,opt_values in opts:
             newBranch = 'To-Test'
         else:
             setFailed()
-            exit
+            exit()
         updateSky(newBranch)
         set_ok += 1
     if opt_name in ('-g', '--gINFO'):
@@ -164,5 +157,3 @@ if set_ok > 3:
     setSuccessReboot()
 elif set_ok == 0:
     setFailed() # 未输入命令行参数
-
-# ssid=Hover_2-C2BD66
