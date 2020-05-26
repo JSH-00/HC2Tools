@@ -106,3 +106,4 @@ venv.bak/
 # myProject add
 *getopt_test.py
 .idea/workspace.xml/
+.vscode/settings.json
