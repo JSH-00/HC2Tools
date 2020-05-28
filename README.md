@@ -30,7 +30,7 @@ python3 HCTool.py -s NewSSID
 ```
 python3 HCTool.py -k dev    // 升级为dev最新版本
 python3 HCTool.py -k totest // 升级为totest最新版本
-
+python3 HCTool.py -k local_file.bin // 使用本地文件进行升级
 ```
 ### Feedback
 E-mail：jishuhan@zerozero.cn

@@ -29,50 +29,64 @@ def updateSuccessReboot():
     print ("安装成功,正在重启……")
     os.system("adb reboot -f")
 
-def setFailed():
+def setFailed(fail_name):
     softMessage()
-    print ("运行失败，查看帮助文档:\npython3 HCTools.py -h\n\n")
+    print ("%s，运行失败，查看帮助文档:\npython3 HCTools.py -h\n\n" % fail_name)
 
 def downloadLatestSky(branch_name):
     """下载天空端最新zip"""
     SkyUrlHead="http://ci.zerozero.cn:88/view/6.HC2_BRemoter/job/HC2_BRemoter-"
     SkyUrlTail="/lastSuccessfulBuild/artifact/*zip*/downLoadSky.zip"
-    urlAll = '%s%s%s' % (SkyUrlHead, newBranch, SkyUrlTail)
+    urlAll = '%s%s%s' % (SkyUrlHead, branch_name, SkyUrlTail)
     wget.download(urlAll, out=None, bar=None)
 
-def updateSky(branch_name):
-    """升级天空端"""
-    if defineImageMode():
-        downloadLatestSky(branch_name)
-        sky_file_name =unzip_file('./downLoadSky.zip','./downLoadSky')
-        sky_file_path = "".join(glob.glob(r'./downLoadSky/archive/ota_sky*')) #  模糊匹配,获取文件路径并转化为字符串
-        sky_file_name = sky_file_path.split('/')[-1] # 从地址中提取文件名
-        print(sky_file_name)
-        updateSkyToDrone(sky_file_path, sky_file_name)
-        deleteZipDir('./downLoadSky.zip','./downLoadSky')
-    else:
+def updateSky(input_name):
+    if isNotImageMode():
         print('升级失败，请将飞机切换到图传模式!')
+        exit()
+    if input_name in ('dev','develop','DEV','Dev'):
+        updateSkyURL('Dev')
+    elif input_name in ('totest','Totest','ToTest','toTest'):
+        updateSkyURL('To-Test')
+    elif os.path.exists('./' + input_name):
+        updateSkyLocal(input_name)
+    else:
+        setFailed('参数错误')
+        exit()
+
+def updateSkyURL(branch_name):
+    """升级天空端（使用分支最新安装包）"""
+    downloadLatestSky(branch_name)
+    sky_file_name = unzip_file('./downLoadSky.zip','./downLoadSky')
+    sky_file_path = "".join(glob.glob(r'./downLoadSky/archive/ota_sky*')) # 模糊匹配,获取文件路径并转化为字符串
+    sky_file_name = sky_file_path.split('/')[-1] # 从地址中提取文件名
+    updateSkyToDrone(sky_file_path, sky_file_name, branch_name)
+    deleteZipDir('./downLoadSky.zip', './downLoadSky')
+
+def updateSkyLocal(sky_file_name):
+    """升级天空端（使用本地安装包）"""
+    updateSkyToDrone('./' + sky_file_name, sky_file_name, '本地')
 
 def unzip_file(zip_src, dst_dir):
     """解压zip文件夹（文件名，文件地址）"""
     file = zipfile.ZipFile(zip_src, 'r')
     file.extractall(dst_dir)
     
-def defineImageMode():
+def isNotImageMode():
     """确认是否为图传模式"""
     image_band = os.popen("adb shell lsusb").read()
     if('aaaa:aa97' in image_band):
-        return 1
+        return 0 # 图传
     else:
-        return 0
+        return 1 # 非图传
 
-def updateSkyToDrone(file_path, file_name):
+def updateSkyToDrone(file_path, file_name, file_place):
     """push天空端安装包并执行升级脚本"""
     os.system("adb push %s /hover/tests/fpv/" % file_path)
     os.system("adb shell systemctl stop zz_fpv")
     time.sleep(0.1)
     os.system("adb shell \"/hover/tests/fpv/fpv_upgrade /hover/tests/fpv/%s\"" % file_name)
-    print('\n安装包:', file_name)
+    print('\n%s安装包:' % file_place, file_name)
     updateSuccessReboot()
 
 def deleteZipDir(zip_path, dir_path):
@@ -86,7 +100,7 @@ def getWiFi():
         wifi_band = "5G"
     elif wifi_band_mark =="g":
         wifi_band = "2.4G"
-    print ("Wi-Fi:",wifi_band)
+    print ("Wi-Fi:", wifi_band)
 
 def getInfo():
         print ("飞机信息：")
@@ -100,7 +114,7 @@ def getHelp():
     print("     设置SSID：-s new_ssid 或 --sSSID new_ssid 或 --sSSID=new_ssid\n"
           "     设置密码：-p new_pass 或 --sPASS new_password 或 --sPASS=new_password\n"
           "切换Wi-Fi频段：-w 5(5g/5G) 或 -w 2(2g/2G/2.4/2.4g/2.4G) 或 --sWIFI new_band\n"
-          "   升级天空端：-k totest(dev) 或 --uSKY totset(dev)\n"
+          "   升级天空端：-k totest(dev/本地安装包名) 或 --uSKY totset(dev/本地安装包名)\n"
           " 获取飞机信息：-g 或 --gINFO\n"
           "     帮助文档：-h 或 --help\n")
 
@@ -118,7 +132,7 @@ opts,args = getopt.gnu_getopt(sys.argv[1:],'-s:-p:-w:-k:-g-h',['sSSID=','sPASS='
 
 # 输入有冗余判断（只判断冗余的普通字符串，输入“-/--”开头的，getopt自身会判断并报错）
 if args:
-    setFailed()
+    setFailed('参数错误')
     exit()
 for opt_name,opt_values in opts:
     if opt_name in ('-s','--sSSID'):
@@ -138,15 +152,8 @@ for opt_name,opt_values in opts:
         setBand(newBand)
         set_ok += 4
     if opt_name in ('-k','--uSKY'):
-        newBranch = opt_values
-        if newBranch in ('dev','develop','DEV','Dev'):
-            newBranch = 'Dev'
-        elif newBranch in ('totest','Totest','ToTest','toTest'):
-            newBranch = 'To-Test'
-        else:
-            setFailed()
-            exit()
-        updateSky(newBranch)
+        skyValue = opt_values
+        updateSky(skyValue)
         set_ok += 1
     if opt_name in ('-g', '--gINFO'):
         getInfo()
@@ -161,4 +168,4 @@ if set_ok > 3:
     getWiFi()
     setSuccessReboot()
 elif set_ok == 0:
-    setFailed() # 未输入命令行参数
+    setFailed('未传入参数') # 未输入命令行参数
