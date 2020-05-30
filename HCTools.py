@@ -6,7 +6,7 @@
 # @Software: vscode
 import sys, getopt
 import os
-import wget, zipfile, glob, time, shutil
+import wget, zipfile, glob, time, shutil, urllib.request, tarfile
 
 def setSSID(new_ssid):
     os.system("adb shell \"sed -i 's/^ssid=.*/ssid=%s/g' data/misc/wifi/hostapd.conf\"" % new_ssid)
@@ -21,12 +21,21 @@ def printSSIDPass():
     os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep ^ssid= | sed 's/ssid=/SSID：/g'\"")
     os.system("adb shell \"cat data/misc/wifi/hostapd.conf | grep wpa_passphrase= | sed 's/wpa_passphrase=/Password：/g'\"")
 
-def setSuccessReboot():
-    print ("更改成功,正在重启……")
+def isReboot(reboot_number):
+    """判断是否要重启"""
+    if reboot_number > 99:
+        reboot_event = '升级'
+    elif set_ok > 3:
+        reboot_event = '更改'
+    elif set_ok >0:
+        exit()
+    elif set_ok == 0:
+        setFailed('未传入参数') # 未输入命令行参数
+        exit()
+    getInfo()
     os.system("adb reboot -f")
-
-def updateSuccessReboot():
-    print ("安装成功,正在重启……")
+    print ("------------------------------------------------------------------")
+    print ("%s完成,正在重启……" % reboot_event)
     os.system("adb reboot -f")
 
 def setFailed(fail_name):
@@ -72,6 +81,18 @@ def unzip_file(zip_src, dst_dir):
     file = zipfile.ZipFile(zip_src, 'r')
     file.extractall(dst_dir)
     
+def untar_file(file_name):
+    """解压tar或tar.gz文件夹（文件名，文件地址）"""
+    tar = tarfile.open(file_name + '.tar.gz')
+    names = tar.getnames()
+    if os.path.isdir(file_name):
+        pass
+    else:
+        os.mkdir(file_name)
+    #由于解压后是许多文件，预先建立同名文件夹
+    for name in names:
+        tar.extract(name, file_name)
+
 def isNotImageMode():
     """确认是否为图传模式"""
     image_band = os.popen("adb shell lsusb").read()
@@ -87,12 +108,43 @@ def updateSkyToDrone(file_path, file_name, file_place):
     time.sleep(0.1)
     os.system("adb shell \"/hover/tests/fpv/fpv_upgrade /hover/tests/fpv/%s\"" % file_name)
     print('\n%s安装包:' % file_place, file_name)
-    updateSuccessReboot()
 
 def deleteZipDir(zip_path, dir_path):
     """删除本地下载的安装包zip和解压的文件夹"""
     os.remove(zip_path)
     shutil.rmtree(dir_path)
+
+def updateIpk(branch_name):
+    """升级IPK某分支最新包"""
+    if branch_name in ('Dev', 'dev'):
+        branch_name = 'Dev'
+        # ci最新build成功的版本号
+        build_numble = urllib.request.urlopen("http://ci.zerozero.cn:88/job/3.HC2Repo-Dev/lastSuccessfulBuild/buildNumber").read().decode('utf-8')
+        url_numble = 3
+        ipk_file_name = 'HC2_%s.release_%s' % (branch_name, build_numble) # 没有后缀的Dev文件名
+    elif branch_name in ('ToTest', 'totest'):
+        branch_name = 'ToTest'
+        build_numble = urllib.request.urlopen("http://ci.zerozero.cn:88/job/2.HC2Repo-ToTest/lastSuccessfulBuild/buildNumber").read().decode('utf-8')
+        url_numble = 2
+        ipk_file_name = ('HC2Repo-%s.release_%s' % (branch_name, build_numble)) # 没有后缀的ToTest文件名
+    else:
+        setFailed('参数错误')
+        exit()
+    downloadIpk(url_numble, branch_name, build_numble, ipk_file_name)
+
+def  downloadIpk(url_numble, branch_name, build_numble, ipk_file_name):
+    """下载IPK最新tar.gz"""
+    urlAll = ('http://ci.zerozero.cn:88/job/%s.HC2Repo-%s/lastSuccessfulBuild/artifact/%s.tar.gz' % (url_numble, branch_name, ipk_file_name))
+    print(urlAll)
+    
+    if not os.path.exists('./' + ipk_file_name + '.tar.gz'):
+        wget.download(urlAll, out=None, bar=None)
+    untar_file(ipk_file_name)
+    time.sleep(1)
+    os.system("cd ./%s" % ipk_file_name)
+    # 此处改为缓存绝对路径时再更改命令
+    # os.system("./install.sh")
+    print("./%s/install.sh" % ipk_file_name)
 
 def getWiFi():
     wifi_band_mark = os.popen("adb shell \"cat data/misc/wifi/hostapd.conf | grep hw_mode= | sed 's/hw_mode=//g'\"").read().strip('\n')
@@ -128,7 +180,7 @@ def softMessage():
     print ()
 
 set_ok = 0 # 定义返回设置/获取状态参数，判断是否设置/获取成功、是否需要重启
-opts,args = getopt.gnu_getopt(sys.argv[1:],'-s:-p:-w:-k:-g-h',['sSSID=','sPASS=','sWIFI=','uSKY=','gINFO','help'])
+opts,args = getopt.gnu_getopt(sys.argv[1:],'-s:-p:-w:-k:-i:-g-h',['sSSID=','sPASS=','sWIFI=','uSKY=','uIPK=','gINFO','help'])
 
 # 输入有冗余判断（只判断冗余的普通字符串，输入“-/--”开头的，getopt自身会判断并报错）
 if args:
@@ -154,18 +206,15 @@ for opt_name,opt_values in opts:
     if opt_name in ('-k','--uSKY'):
         skyValue = opt_values
         updateSky(skyValue)
-        set_ok += 1
+        set_ok += 100
+    if opt_name in ('-i','--uIPK'):
+        ipkValue = opt_values
+        updateIpk(ipkValue)
+        set_ok += 100
     if opt_name in ('-g', '--gINFO'):
         getInfo()
         set_ok += 1
     if opt_name in ('-h', '--help'):
         getHelp()
         set_ok += 1
-
-# 判断是否设置/获取成功并要重启
-if set_ok > 3:
-    printSSIDPass()
-    getWiFi()
-    setSuccessReboot()
-elif set_ok == 0:
-    setFailed('未传入参数') # 未输入命令行参数
+isReboot(set_ok) # 判断是否升级/设置/获取成功并要重启
