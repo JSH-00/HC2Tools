@@ -40,7 +40,11 @@ def isReboot(reboot_number):
     print ("------------------------------------------------------------------")
     print ("%s完成,正在重启……" % reboot_event)
 
-def cachePathExist():
+def getCacheFilePath(file_name):
+    """返回文件缓存路径"""
+    return CACHE_PATH_FILE + '/' + file_name
+
+def createCachePathIfNeed():
     """判断缓存目录是否存在，不存在则新建文件夹"""
     if os.path.exists(CACHE_PATH_FILE):
         return 1
@@ -91,10 +95,9 @@ def unzip_file(zip_src, dst_dir):
     file = zipfile.ZipFile(zip_src, 'r')
     file.extractall(dst_dir)
     
-def untar_file(file_name, file_path):
-    """解压tar或tar.gz文件夹(文件名，缓存总目录地址）"""
-    dir_path = CACHE_PATH_FILE + '/'+ file_name # 对应的解压文件夹路径
-    tar = tarfile.open(dir_path + '.tar.gz') #对应的解压包路径
+def untar_file(file_name, dir_path):
+    """解压tar或tar.gz文件夹(文件缓存路径，文件夹缓存路径）"""
+    tar = tarfile.open(file_name) #对应的解压包路径
     names = tar.getnames()
     if os.path.isdir(dir_path):
         pass
@@ -125,8 +128,8 @@ def deleteZipDir(zip_path, dir_path):
     os.remove(zip_path)
     shutil.rmtree(dir_path)
 
-def updateIpk(branch_name):
-    """升级IPK某分支最新包"""
+def getIpkInfo(branch_name):
+    """获取ipk分支最新文件名和URL"""
     if branch_name in ('Dev', 'dev'):
         branch_name = 'Dev'
         # ci最新build成功的版本号
@@ -141,26 +144,35 @@ def updateIpk(branch_name):
     else:
         setFailed('参数错误')
         exit()
-    downloadIpk(url_numble, branch_name, build_numble, ipk_file_name)
+    download_ipk_url = ('http://ci.zerozero.cn:88/job/%s.HC2Repo-%s/lastSuccessfulBuild/artifact/%s.tar.gz' % (url_numble, branch_name, ipk_file_name))
+    return ipk_file_name, download_ipk_url # 返回：文件名(不带后缀)、下载URL
 
-def  downloadIpk(url_numble, branch_name, build_numble, ipk_file_name):
-    """下载IPK最新tar.gz解压并安装"""
-    cachePathExist() # 判断缓存文件夹是否存在
-    urlAll = ('http://ci.zerozero.cn:88/job/%s.HC2Repo-%s/lastSuccessfulBuild/artifact/%s.tar.gz' % (url_numble, branch_name, ipk_file_name))
-    ipk_untar_path = CACHE_PATH_FILE + '/' + ipk_file_name # 解压后文件夹路径
-    ipk_file_path = ipk_untar_path + '.tar.gz' # 未解压ipk文件路径
-    if not os.path.exists(ipk_file_path):
-        print(ipk_file_name + '.tar.gz 下载中...')
-        urllib.request.urlretrieve(urlAll, CACHE_PATH_FILE + '/' + ipk_file_name + '.tar.gz', callbackfunc)
-        print('下载完成，正在解压文件并升级...')
-        untar_file(ipk_file_name, CACHE_PATH_FILE)
-    elif not os.path.exists(ipk_untar_path):
-        untar_file(ipk_file_name, CACHE_PATH_FILE)
-        print('文件已存在，正在解压文件并升级...')
-    else:
-        print('文件已存在，正在升级...')
-    os.chdir(ipk_untar_path) # 进入文件夹
+def updateIpk(branch_name):
+    """升级IPK某分支最新包"""
+    createCachePathIfNeed() # 判断缓存文件夹是否存在
+    ipk_file_name, download_ipk_url = getIpkInfo(branch_name)
+    untar_folder_cache_path = getCacheFilePath(ipk_file_name) # 最新版IPK本地解压文件夹缓存路径
+    download_ipk_cache_path = getCacheFilePath(ipk_file_name + '.tar.gz') # 最新版IPK本地缓存路径
+    downloadUntarIfNeed(download_ipk_cache_path, untar_folder_cache_path, download_ipk_url)
+    os.chdir(untar_folder_cache_path) # 进入文件夹
     os.system('./install.sh') # 执行安装脚本
+
+def  downloadFromUrl(download_url, download_path):
+    """下载URL的文件并保存到指定路径"""
+    urllib.request.urlretrieve(download_url, download_path, callbackfunc)
+
+def downloadUntarIfNeed(download_file_path, untar_folder_path, download_ipk_url):
+    """如果需要，则下载并解压"""
+    if not os.path.exists(download_file_path):
+        print(download_file_path + '\n下载中...')
+        urllib.request.urlretrieve(download_ipk_url, download_file_path, callbackfunc)
+        print('下载完成，正在解压...')
+        untar_file(download_file_path, untar_folder_path)
+    elif not os.path.exists(untar_folder_path):
+        untar_file(download_file_path, untar_folder_path)
+        print(download_file_path + '\n文件已存在，正在解压...')
+    else:
+        print(download_file_path + '\n文件已存在，准备升级...')
 
 def callbackfunc(blocknum, blocksize, totalsize):
     '''下载进度条
