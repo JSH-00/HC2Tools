@@ -7,7 +7,9 @@
 import sys, getopt
 import os
 import wget, zipfile, glob, time, shutil, urllib.request, tarfile
-
+import getpass
+CACHE_PATH = os.path.join(os.path.expanduser("~"), 'Library')
+CACHE_PATH_FILE = CACHE_PATH + '/HCTool_temp'
 def setSSID(new_ssid):
     os.system("adb shell \"sed -i 's/^ssid=.*/ssid=%s/g' data/misc/wifi/hostapd.conf\"" % new_ssid)
 
@@ -32,11 +34,19 @@ def isReboot(reboot_number):
     elif set_ok == 0:
         setFailed('未传入参数') # 未输入命令行参数
         exit()
+    print ("------------------------------------------------------------------")
     getInfo()
     os.system("adb reboot -f")
     print ("------------------------------------------------------------------")
     print ("%s完成,正在重启……" % reboot_event)
-    os.system("adb reboot -f")
+
+def cachePathExist():
+    """判断缓存目录是否存在，不存在则新建文件夹"""
+    if os.path.exists(CACHE_PATH_FILE):
+        return 1
+    else:
+        print('新建缓存目录' + CACHE_PATH_FILE)
+        os.makedirs(CACHE_PATH_FILE)
 
 def setFailed(fail_name):
     softMessage()
@@ -81,17 +91,18 @@ def unzip_file(zip_src, dst_dir):
     file = zipfile.ZipFile(zip_src, 'r')
     file.extractall(dst_dir)
     
-def untar_file(file_name):
-    """解压tar或tar.gz文件夹（文件名，文件地址）"""
-    tar = tarfile.open(file_name + '.tar.gz')
+def untar_file(file_name, file_path):
+    """解压tar或tar.gz文件夹(文件名，缓存总目录地址）"""
+    dir_path = CACHE_PATH_FILE + '/'+ file_name # 对应的解压文件夹路径
+    tar = tarfile.open(dir_path + '.tar.gz') #对应的解压包路径
     names = tar.getnames()
-    if os.path.isdir(file_name):
+    if os.path.isdir(dir_path):
         pass
     else:
-        os.mkdir(file_name)
+        os.mkdir(dir_path)
     #由于解压后是许多文件，预先建立同名文件夹
     for name in names:
-        tar.extract(name, file_name)
+        tar.extract(name, dir_path)
 
 def isNotImageMode():
     """确认是否为图传模式"""
@@ -133,18 +144,35 @@ def updateIpk(branch_name):
     downloadIpk(url_numble, branch_name, build_numble, ipk_file_name)
 
 def  downloadIpk(url_numble, branch_name, build_numble, ipk_file_name):
-    """下载IPK最新tar.gz"""
+    """下载IPK最新tar.gz解压并安装"""
+    cachePathExist() # 判断缓存文件夹是否存在
     urlAll = ('http://ci.zerozero.cn:88/job/%s.HC2Repo-%s/lastSuccessfulBuild/artifact/%s.tar.gz' % (url_numble, branch_name, ipk_file_name))
-    print(urlAll)
-    
-    if not os.path.exists('./' + ipk_file_name + '.tar.gz'):
-        wget.download(urlAll, out=None, bar=None)
-    untar_file(ipk_file_name)
-    time.sleep(1)
-    os.system("cd ./%s" % ipk_file_name)
-    # 此处改为缓存绝对路径时再更改命令
-    # os.system("./install.sh")
-    print("./%s/install.sh" % ipk_file_name)
+    ipk_untar_path = CACHE_PATH_FILE + '/' + ipk_file_name # 解压后文件夹路径
+    ipk_file_path = ipk_untar_path + '.tar.gz' # 未解压ipk文件路径
+    if not os.path.exists(ipk_file_path):
+        print(ipk_file_name + '.tar.gz 下载中...')
+        urllib.request.urlretrieve(urlAll, CACHE_PATH_FILE + '/' + ipk_file_name + '.tar.gz', callbackfunc)
+        print('下载完成，正在解压文件并升级...')
+        untar_file(ipk_file_name, CACHE_PATH_FILE)
+    elif not os.path.exists(ipk_untar_path):
+        untar_file(ipk_file_name, CACHE_PATH_FILE)
+        print('文件已存在，正在解压文件并升级...')
+    else:
+        print('文件已存在，正在升级...')
+    os.chdir(ipk_untar_path) # 进入文件夹
+    os.system('./install.sh') # 执行安装脚本
+
+def callbackfunc(blocknum, blocksize, totalsize):
+    '''下载进度条
+    @blocknum: 已经下载的数据块
+    @blocksize: 数据块的大小
+    @totalsize: 远程文件的大小
+    '''
+    percent = 100.0 * blocknum * blocksize / totalsize
+    if percent > 100:
+        percent = 100
+    sys.stdout.write("  %.2f%%\r" % percent)        
+    sys.stdout.flush()
 
 def getWiFi():
     wifi_band_mark = os.popen("adb shell \"cat data/misc/wifi/hostapd.conf | grep hw_mode= | sed 's/hw_mode=//g'\"").read().strip('\n')
@@ -166,6 +194,7 @@ def getHelp():
     print("     设置SSID：-s new_ssid 或 --sSSID new_ssid 或 --sSSID=new_ssid\n"
           "     设置密码：-p new_pass 或 --sPASS new_password 或 --sPASS=new_password\n"
           "切换Wi-Fi频段：-w 5(5g/5G) 或 -w 2(2g/2G/2.4/2.4g/2.4G) 或 --sWIFI new_band\n"
+          "     升级IPK：-i totest(dev) 或 --uIPK totset(dev)\n"
           "   升级天空端：-k totest(dev/本地安装包名) 或 --uSKY totset(dev/本地安装包名)\n"
           " 获取飞机信息：-g 或 --gINFO\n"
           "     帮助文档：-h 或 --help\n")
