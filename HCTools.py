@@ -94,7 +94,7 @@ def unzip_file(zip_src, dst_dir):
     file.extractall(dst_dir)
     
 def untar_file(file_name, dir_path):
-    """解压tar或tar.gz文件夹(文件缓存路径，文件夹缓存路径）"""
+    """解压tar或tar.gz文件夹（文件缓存路径，文件夹缓存路径）"""
     tar = tarfile.open(file_name) #对应的解压包路径
     names = tar.getnames()
     if os.path.isdir(dir_path):
@@ -151,11 +151,11 @@ def updateIpk(branch_name):
     os.system('./install.sh') # 执行安装脚本
 
 def  downloadFromUrl(download_url, download_path):
-    """下载URL的文件并保存到指定路径"""
+    """下载URL的文件并保存到指定路径（下载URL，下载路径）"""
     urllib.request.urlretrieve(download_url, download_path, callbackfunc)
 
 def downloadUntarIfNeed(download_file_path, untar_folder_path, download_file_url):
-    """如果需要，则下载并解压"""
+    """如果需要，则下载并解压（下载路径，解压文件夹路径，下载URL）"""
     if not os.path.exists(download_file_path):
         print(download_file_path + '\n下载中...')
         urllib.request.urlretrieve(download_file_url, download_file_path, callbackfunc)
@@ -168,6 +168,7 @@ def downloadUntarIfNeed(download_file_path, untar_folder_path, download_file_url
         print(download_file_path + '\n文件已存在，准备升级...')
 
 def unzipOrUntar(zip_file_path, file_unzip_folder_path):
+    '''判断解压文件类型并解压到指定文件夹（压缩文件路径，解压文件夹路径）'''
     file_extension = os.path.splitext(zip_file_path)
     if (file_extension[-1] == '.gz' and file_extension[-2] == '.tar') or file_extension[-1] == '.tar':
         untar_file(zip_file_path, file_unzip_folder_path)
@@ -177,12 +178,8 @@ def unzipOrUntar(zip_file_path, file_unzip_folder_path):
         print('无法解压该文件！')
 
 def callbackfunc(blocknum, blocksize, totalsize):
-    '''下载进度条
-    @blocknum: 已经下载的数据块
-    @blocksize: 数据块的大小
-    @totalsize: 远程文件的大小
-    '''
-    if not totalsize == -1:
+    '''下载进度条(已经下载的数据块,数据块的大小,远程文件的大小)'''
+    if not totalsize == -1: # 旧的FTP服务器上，它不返回文件大小（下载大遥控器包时），此时参数为-1
         percent = 100.0 * blocknum * blocksize / totalsize
         if percent > 100:
             percent = 100
@@ -225,7 +222,6 @@ def softMessage():
 
 set_ok = 0 # 定义返回设置/获取状态参数，判断是否设置/获取成功、是否需要重启
 opts,args = getopt.gnu_getopt(sys.argv[1:],'-s:-p:-w:-k:-i:-g-h',['sSSID=','sPASS=','sWIFI=','uSKY=','uIPK=','gINFO','help'])
-
 # 输入有冗余判断（只判断冗余的普通字符串，输入“-/--”开头的，getopt自身会判断并报错）
 if args:
     setFailed('参数错误')
@@ -249,12 +245,6 @@ for opt_name,opt_values in opts:
         set_ok += 4
     if opt_name in ('-k','--uSKY'):
         skyValue = opt_values
-        # branch_name = skyValue
-        # build_numble = urllib.request.urlopen("http://ci.zerozero.cn:88/view/6.HC2_BRemoter/job/HC2_BRemoter-%s/lastSuccessfulBuild/buildNumber" % branch_name).read().decode('utf-8')
-        # big_remoter_url = 'http://ci.zerozero.cn:88/view/6.HC2_BRemoter/job/HC2_BRemoter-' + branch_name + '/lastSuccessfulBuild/artifact/*zip*/downLoadSky.zip'
-        # unzip_folder_path = CACHE_PATH_FILE + '/BRemoter_' + branch_name + '_' + build_numble
-        # download_big_remoter_path = unzip_folder_path + '.zip'
-        # urllib.request.urlretrieve(big_remoter_url, download_big_remoter_path, callbackfunc)
         updateSky(skyValue)
         set_ok += 100
     if opt_name in ('-i','--uIPK'):
@@ -266,6 +256,5 @@ for opt_name,opt_values in opts:
         set_ok += 1
     if opt_name in ('-h', '--help'):
         getHelp()
-
         set_ok += 1
 isReboot(set_ok) # 判断是否升级/设置/获取成功并要重启
