@@ -169,10 +169,11 @@ def downloadUntarIfNeed(download_file_path, untar_folder_path, download_file_url
 
 def unzipOrUntar(zip_file_path, file_unzip_folder_path):
     '''判断解压文件类型并解压到指定文件夹（压缩文件路径，解压文件夹路径）'''
-    file_extension = os.path.splitext(zip_file_path)
-    if (file_extension[-1] == '.gz' and file_extension[-2] == '.tar') or file_extension[-1] == '.tar':
+    # file_extension = os.path.splitext(zip_file_path)
+    file_extension = zip_file_path.split('.')
+    if (file_extension[-1] == 'gz' and file_extension[-2] == 'tar') or file_extension[-1] == '.tar':
         untar_file(zip_file_path, file_unzip_folder_path)
-    elif file_extension[-1] == '.zip':
+    elif file_extension[-1] == 'zip':
         unzip_file(zip_file_path, file_unzip_folder_path)
     else:
         print('无法解压该文件！')
