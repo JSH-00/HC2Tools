@@ -60,7 +60,7 @@ def downloadLatestBRemoter(branch_name):
     big_remoter_url = 'http://ci.zerozero.cn:88/view/6.HC2_BRemoter/job/HC2_BRemoter-' + branch_name + '/lastSuccessfulBuild/artifact/*zip*/downLoadSky.zip'
     unzip_folder_path = CACHE_PATH_FILE + '/BRemoter_' + branch_name + '_' + build_numble
     download_big_remoter_path = unzip_folder_path + '.zip'
-    downloadUntarIfNeed(download_big_remoter_path, unzip_folder_path, big_remoter_url)
+    downloadFirmwareUnpackZipOrTarIfNeed(download_big_remoter_path, unzip_folder_path, big_remoter_url)
     return download_big_remoter_path, unzip_folder_path # 返回下载包、解压文件夹的绝对路径
 
 def updateSky(input_name):
@@ -82,11 +82,11 @@ def updateSkyURL(branch_name):
     big_remoter_file_path, unzip_folder_path = downloadLatestBRemoter(branch_name)
     big_remoter_ota_sky_bin_path = "".join(glob.glob('%s/archive/ota_sky*' % unzip_folder_path)) # 模糊匹配,获取文件路径并转化为字符串
     ota_sky_bin_name = big_remoter_ota_sky_bin_path.split('/')[-1] # 从地址中提取文件名
-    updateSkyToDrone(big_remoter_ota_sky_bin_path, ota_sky_bin_name, branch_name)
+    updateSkyFirmwareToDrone(big_remoter_ota_sky_bin_path, ota_sky_bin_name, branch_name)
 
 def updateSkyLocal(sky_file_name):
     """升级天空端（使用本地安装包）"""
-    updateSkyToDrone('./' + sky_file_name, sky_file_name, '本地')
+    updateSkyFirmwareToDrone('./' + sky_file_name, sky_file_name, '本地')
 
 def unzip_file(zip_src, dst_dir):
     """解压zip文件夹（文件名，文件地址）"""
@@ -113,7 +113,7 @@ def isNotImageMode():
     else:
         return 1 # 非图传
 
-def updateSkyToDrone(file_path, file_name, file_place_or_branch):
+def updateSkyFirmwareToDrone(file_path, file_name, file_place_or_branch):
     """push天空端安装包并执行升级脚本(安装文件的路径，安装文件名，分支名)"""
     os.system("adb push %s /hover/tests/fpv/" % file_path)
     os.system("adb shell systemctl stop zz_fpv")
@@ -146,7 +146,7 @@ def updateIpk(branch_name):
     ipk_file_name, download_ipk_url = getIpkInfo(branch_name)
     untar_folder_cache_path = getCacheFilePath(ipk_file_name) # 最新版IPK本地解压文件夹缓存路径
     download_ipk_cache_path = getCacheFilePath(ipk_file_name + '.tar.gz') # 最新版IPK本地缓存路径
-    downloadUntarIfNeed(download_ipk_cache_path, untar_folder_cache_path, download_ipk_url)
+    downloadFirmwareUnpackZipOrTarIfNeed(download_ipk_cache_path, untar_folder_cache_path, download_ipk_url)
     os.chdir(untar_folder_cache_path) # 进入文件夹
     os.system('./install.sh') # 执行安装脚本
 
@@ -154,7 +154,7 @@ def  downloadFromUrl(download_url, download_path):
     """下载URL的文件并保存到指定路径（下载URL，下载路径）"""
     urllib.request.urlretrieve(download_url, download_path, callbackfunc)
 
-def downloadUntarIfNeed(download_file_path, untar_folder_path, download_file_url):
+def downloadFirmwareUnpackZipOrTarIfNeed(download_file_path, untar_folder_path, download_file_url):
     """如果需要，则下载并解压（下载路径，解压文件夹路径，下载URL）"""
     if not os.path.exists(download_file_path):
         print(download_file_path + '\n下载中...')

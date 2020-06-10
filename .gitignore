@@ -107,5 +107,7 @@ venv.bak/
 *getopt_test.py
 .idea/workspace.xml/
 .vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
 .idea
 .DS_Store
