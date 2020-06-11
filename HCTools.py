@@ -4,12 +4,10 @@
 # @Author  : ShuHan Ji
 # @File    : HCTools.py
 # @Software: vscode
-import sys, getopt
-import os
-import wget, zipfile, glob, time, shutil, urllib.request, tarfile
-import getpass
+import sys, getopt, os, zipfile, glob, time, shutil, urllib.request, tarfile, getpass
 CACHE_PATH = os.path.join(os.path.expanduser("~"), 'Library')
 CACHE_PATH_FILE = CACHE_PATH + '/HCTool_temp'
+
 def setSSID(new_ssid):
     os.system("adb shell \"sed -i 's/^ssid=.*/ssid=%s/g' data/misc/wifi/hostapd.conf\"" % new_ssid)
 
@@ -56,12 +54,14 @@ def setFailed(fail_name):
     softMessage()
     print ("%s，运行失败，查看帮助文档:\npython3 HCTools.py -h\n\n" % fail_name)
 
-def downloadLatestSky(branch_name):
+def downloadLatestBRemoter(branch_name):
     """下载天空端最新zip"""
-    SkyUrlHead="http://ci.zerozero.cn:88/view/6.HC2_BRemoter/job/HC2_BRemoter-"
-    SkyUrlTail="/lastSuccessfulBuild/artifact/*zip*/downLoadSky.zip"
-    urlAll = '%s%s%s' % (SkyUrlHead, branch_name, SkyUrlTail)
-    wget.download(urlAll, out=None, bar=None)
+    build_numble = urllib.request.urlopen("http://ci.zerozero.cn:88/view/6.HC2_BRemoter/job/HC2_BRemoter-%s/lastSuccessfulBuild/buildNumber" % branch_name).read().decode('utf-8')
+    big_remoter_url = 'http://ci.zerozero.cn:88/view/6.HC2_BRemoter/job/HC2_BRemoter-' + branch_name + '/lastSuccessfulBuild/artifact/*zip*/downLoadSky.zip'
+    unzip_folder_path = CACHE_PATH_FILE + '/BRemoter_' + branch_name + '_' + build_numble
+    download_big_remoter_path = unzip_folder_path + '.zip'
+    downloadFirmwareUnpackZipOrTarIfNeed(download_big_remoter_path, unzip_folder_path, big_remoter_url)
+    return download_big_remoter_path, unzip_folder_path # 返回下载包、解压文件夹的绝对路径
 
 def updateSky(input_name):
     if isNotImageMode():
@@ -79,16 +79,14 @@ def updateSky(input_name):
 
 def updateSkyURL(branch_name):
     """升级天空端（使用分支最新安装包）"""
-    downloadLatestSky(branch_name)
-    sky_file_name = unzip_file('./downLoadSky.zip','./downLoadSky')
-    sky_file_path = "".join(glob.glob(r'./downLoadSky/archive/ota_sky*')) # 模糊匹配,获取文件路径并转化为字符串
-    sky_file_name = sky_file_path.split('/')[-1] # 从地址中提取文件名
-    updateSkyToDrone(sky_file_path, sky_file_name, branch_name)
-    deleteZipDir('./downLoadSky.zip', './downLoadSky')
+    big_remoter_file_path, unzip_folder_path = downloadLatestBRemoter(branch_name)
+    big_remoter_ota_sky_bin_path = "".join(glob.glob('%s/archive/ota_sky*' % unzip_folder_path)) # 模糊匹配,获取文件路径并转化为字符串
+    ota_sky_bin_name = big_remoter_ota_sky_bin_path.split('/')[-1] # 从地址中提取文件名
+    updateSkyFirmwareToDrone(big_remoter_ota_sky_bin_path, ota_sky_bin_name, branch_name)
 
 def updateSkyLocal(sky_file_name):
     """升级天空端（使用本地安装包）"""
-    updateSkyToDrone('./' + sky_file_name, sky_file_name, '本地')
+    updateSkyFirmwareToDrone('./' + sky_file_name, sky_file_name, '本地')
 
 def unzip_file(zip_src, dst_dir):
     """解压zip文件夹（文件名，文件地址）"""
@@ -96,7 +94,7 @@ def unzip_file(zip_src, dst_dir):
     file.extractall(dst_dir)
     
 def untar_file(file_name, dir_path):
-    """解压tar或tar.gz文件夹(文件缓存路径，文件夹缓存路径）"""
+    """解压tar或tar.gz文件夹（文件缓存路径，文件夹缓存路径）"""
     tar = tarfile.open(file_name) #对应的解压包路径
     names = tar.getnames()
     if os.path.isdir(dir_path):
@@ -115,18 +113,13 @@ def isNotImageMode():
     else:
         return 1 # 非图传
 
-def updateSkyToDrone(file_path, file_name, file_place):
-    """push天空端安装包并执行升级脚本"""
+def updateSkyFirmwareToDrone(file_path, file_name, file_place_or_branch):
+    """push天空端安装包并执行升级脚本(安装文件的路径，安装文件名，分支名)"""
     os.system("adb push %s /hover/tests/fpv/" % file_path)
     os.system("adb shell systemctl stop zz_fpv")
     time.sleep(0.1)
     os.system("adb shell \"/hover/tests/fpv/fpv_upgrade /hover/tests/fpv/%s\"" % file_name)
-    print('\n%s安装包:' % file_place, file_name)
-
-def deleteZipDir(zip_path, dir_path):
-    """删除本地下载的安装包zip和解压的文件夹"""
-    os.remove(zip_path)
-    shutil.rmtree(dir_path)
+    print('\n%s安装包:' % file_place_or_branch, file_name)
 
 def getIpkInfo(branch_name):
     """获取ipk分支最新文件名和URL"""
@@ -153,38 +146,46 @@ def updateIpk(branch_name):
     ipk_file_name, download_ipk_url = getIpkInfo(branch_name)
     untar_folder_cache_path = getCacheFilePath(ipk_file_name) # 最新版IPK本地解压文件夹缓存路径
     download_ipk_cache_path = getCacheFilePath(ipk_file_name + '.tar.gz') # 最新版IPK本地缓存路径
-    downloadUntarIfNeed(download_ipk_cache_path, untar_folder_cache_path, download_ipk_url)
+    downloadFirmwareUnpackZipOrTarIfNeed(download_ipk_cache_path, untar_folder_cache_path, download_ipk_url)
     os.chdir(untar_folder_cache_path) # 进入文件夹
     os.system('./install.sh') # 执行安装脚本
 
 def  downloadFromUrl(download_url, download_path):
-    """下载URL的文件并保存到指定路径"""
+    """下载URL的文件并保存到指定路径（下载URL，下载路径）"""
     urllib.request.urlretrieve(download_url, download_path, callbackfunc)
 
-def downloadUntarIfNeed(download_file_path, untar_folder_path, download_ipk_url):
-    """如果需要，则下载并解压"""
+def downloadFirmwareUnpackZipOrTarIfNeed(download_file_path, untar_folder_path, download_file_url):
+    """如果需要，则下载并解压（下载路径，解压文件夹路径，下载URL）"""
     if not os.path.exists(download_file_path):
         print(download_file_path + '\n下载中...')
-        urllib.request.urlretrieve(download_ipk_url, download_file_path, callbackfunc)
+        urllib.request.urlretrieve(download_file_url, download_file_path, callbackfunc)
         print('下载完成，正在解压...')
-        untar_file(download_file_path, untar_folder_path)
+        unzipOrUntar(download_file_path, untar_folder_path)
     elif not os.path.exists(untar_folder_path):
-        untar_file(download_file_path, untar_folder_path)
+        unzipOrUntar(download_file_path, untar_folder_path)
         print(download_file_path + '\n文件已存在，正在解压...')
     else:
         print(download_file_path + '\n文件已存在，准备升级...')
 
+def unzipOrUntar(zip_file_path, file_unzip_folder_path):
+    '''判断解压文件类型并解压到指定文件夹（压缩文件路径，解压文件夹路径）'''
+    # file_extension = os.path.splitext(zip_file_path)
+    file_extension = zip_file_path.split('.')
+    if (file_extension[-1] == 'gz' and file_extension[-2] == 'tar') or file_extension[-1] == '.tar':
+        untar_file(zip_file_path, file_unzip_folder_path)
+    elif file_extension[-1] == 'zip':
+        unzip_file(zip_file_path, file_unzip_folder_path)
+    else:
+        print('无法解压该文件！')
+
 def callbackfunc(blocknum, blocksize, totalsize):
-    '''下载进度条
-    @blocknum: 已经下载的数据块
-    @blocksize: 数据块的大小
-    @totalsize: 远程文件的大小
-    '''
-    percent = 100.0 * blocknum * blocksize / totalsize
-    if percent > 100:
-        percent = 100
-    sys.stdout.write("  %.2f%%\r" % percent)        
-    sys.stdout.flush()
+    '''下载进度条(已经下载的数据块,数据块的大小,远程文件的大小)'''
+    if not totalsize == -1: # 旧的FTP服务器上，它不返回文件大小（下载大遥控器包时），此时参数为-1
+        percent = 100.0 * blocknum * blocksize / totalsize
+        if percent > 100:
+            percent = 100
+        sys.stdout.write("  %.2f%%\r" % percent)        
+        sys.stdout.flush()
 
 def getWiFi():
     wifi_band_mark = os.popen("adb shell \"cat data/misc/wifi/hostapd.conf | grep hw_mode= | sed 's/hw_mode=//g'\"").read().strip('\n')
@@ -222,7 +223,6 @@ def softMessage():
 
 set_ok = 0 # 定义返回设置/获取状态参数，判断是否设置/获取成功、是否需要重启
 opts,args = getopt.gnu_getopt(sys.argv[1:],'-s:-p:-w:-k:-i:-g-h',['sSSID=','sPASS=','sWIFI=','uSKY=','uIPK=','gINFO','help'])
-
 # 输入有冗余判断（只判断冗余的普通字符串，输入“-/--”开头的，getopt自身会判断并报错）
 if args:
     setFailed('参数错误')
