@@ -4,12 +4,10 @@
 
 ## Useage
 #### 获取帮助
-
 ```
 python3 HCTool.py -h
 ```
 #### 获取飞机信息
-
 ```
 python3 HCTool.py -g
 ```
@@ -26,11 +24,16 @@ python3 HCTool.py -w 2   //改为2.4G
 ```
 python3 HCTool.py -s NewSSID
 ```
+#### 升级IPK
+```
+python3 HCTool.py -i dev    // 升级为dev最新版本
+python3 HCTool.py -i totest // 升级为totest最新版本
+```
 #### 升级天空端
 ```
 python3 HCTool.py -k dev    // 升级为dev最新版本
 python3 HCTool.py -k totest // 升级为totest最新版本
-
+python3 HCTool.py -k local_file.bin // 使用本地文件进行升级
 ```
 ### Feedback
 E-mail：jishuhan@zerozero.cn
